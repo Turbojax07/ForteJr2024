@@ -41,8 +41,7 @@ public final class Constants {
         public static final double maxTurnSpeed = maxDriveSpeed / (robotWidth / 2); // Meters / Second
 
         // Conversion factors
-        public static final double posConversionFactor = wheelCircumference / gearRatio;
-        public static final double velConversionFactor = wheelCircumference / gearRatio / 60;
+        public static final double conversionFactor = wheelCircumference / gearRatio;
 
         // PIDFF values
         public static final double leftP   = 0.0;
