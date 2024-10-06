@@ -4,11 +4,16 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
-
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -16,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private Command teleopCommand;
 
@@ -26,12 +31,35 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
-        // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-        // autonomous chooser on the dashboard.
-        RobotContainer robotContainer = new RobotContainer();
+        // Saving the project name
+        Logger.recordMetadata("ProjectName", "ForteJr");
 
-        autonomousCommand = robotContainer.getAutonomousCommand();
-        teleopCommand = robotContainer.getTeleopCommand();
+        // Configuring the Logger based on the robot's mode.
+        switch (Constants.currentMode) {
+            case REAL:
+                Logger.addDataReceiver(new WPILOGWriter("/U/logs"));
+                Logger.addDataReceiver(new NT4Publisher());
+                new PowerDistribution(1, PowerDistribution.ModuleType.kRev);
+                break;
+            case SIM:
+                Logger.addDataReceiver(new WPILOGWriter("sim_logs"));
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+            case REPLAY:
+                Logger.setReplaySource(new WPILOGReader(LogFileUtil.findReplayLog()));
+                Logger.addDataReceiver(new WPILOGWriter("replay_logs"));
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+        }
+
+        // Starting the Logger
+        Logger.start();
+
+        // Instantiate the RobotContainer.  This will assign all our button bindings.
+        RobotContainer robotContainer = RobotContainer.getInstance();
+
+        autonomousCommand = robotContainer.getRealAutoCommand();
+        teleopCommand = robotContainer.getRealTeleopCommand();
     }
 
     /**
@@ -123,7 +151,12 @@ public class Robot extends TimedRobot {
 
     /** This function is called once each time the robot enters Simulation. */
     @Override
-    public void simulationInit() {}
+    public void simulationInit() {
+        RobotContainer robotContainer = RobotContainer.getInstance();
+
+        autonomousCommand = robotContainer.getSimAutoCommand();
+        teleopCommand = robotContainer.getSimTeleopCommand();
+    }
 
     /** This function is called periodically during Simulation. */
     @Override

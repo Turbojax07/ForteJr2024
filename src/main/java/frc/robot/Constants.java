@@ -15,6 +15,14 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+    public static enum RobotMode {
+        REAL,
+        SIM,
+        REPLAY
+    }
+
+    public static final RobotMode currentMode = RobotMode.SIM;
+
     public static class DriveConstants {
         // Motor IDs
         public static final int frontLeftID = 1;
