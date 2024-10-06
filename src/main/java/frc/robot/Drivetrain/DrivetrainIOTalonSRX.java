@@ -4,10 +4,8 @@ import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants.DriveConstants;
 
 public class DrivetrainIOTalonSRX implements DrivetrainIO {
@@ -15,8 +13,6 @@ public class DrivetrainIOTalonSRX implements DrivetrainIO {
     private TalonSRX frMotor;
     private TalonSRX blMotor;
     private TalonSRX brMotor;
-
-    private Pigeon2 gyro;
 
     public DrivetrainIOTalonSRX() {
         // Initializing the motors
@@ -76,7 +72,6 @@ public class DrivetrainIOTalonSRX implements DrivetrainIO {
     public void updateInputs(DrivetrainIOInputs inputs) {
         inputs.leftVelocity = getLeftSpeed();
         inputs.rightVelocity = getRightSpeed();
-        inputs.heading = getHeading();
     }
 
     /**
@@ -119,26 +114,5 @@ public class DrivetrainIOTalonSRX implements DrivetrainIO {
     public void setRightSpeed(double speed) {
         speed = MathUtil.clamp(speed, -1, 1);
         frMotor.set(ControlMode.PercentOutput, speed);
-    }
-
-    /**
-     * Gets the heading of the robot.
-     * 
-     * @return The heading of the robot as a {@link Rotation2d}.
-     */
-    @Override
-    public Rotation2d getHeading() {
-        return gyro.getRotation2d();
-    }
-
-    /**
-     * Resets the heading of the robot.
-     * This does not actually drive the robot so that it faces the specified angle.
-     * 
-     * @param heading The heading of the robot as a {@link Rotation2d}
-     */
-    @Override
-    public void resetHeading(Rotation2d heading) {
-        gyro.setYaw(heading.getDegrees());
     }
 }
