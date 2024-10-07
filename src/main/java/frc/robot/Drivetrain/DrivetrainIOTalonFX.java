@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants.DriveConstants;
 
 public class DrivetrainIOTalonFX implements DrivetrainIO {
@@ -75,6 +76,7 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      */
     @Override
     public void setLeftSpeed(double speed) {
+        speed = MathUtil.clamp(speed, -1, 1);
         flMotor.setControl(new DutyCycleOut(speed));
     }
 
@@ -94,6 +96,7 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      */
     @Override
     public void setRightSpeed(double speed) {
+        speed = MathUtil.clamp(speed, -1, 1);
         frMotor.setControl(new DutyCycleOut(speed));
     }
 }
