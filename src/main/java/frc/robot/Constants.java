@@ -24,6 +24,13 @@ public final class Constants {
     public static final RobotMode currentMode = RobotMode.SIM;
 
     public static class DriveConstants {
+        // Moment of Inertia
+        public static final double batteryWeight = Units.lbsToKilograms(12.5);
+        public static final double batteryToCenter = Units.inchesToMeters(10);
+        public static final double gearboxWeight = Units.lbsToKilograms(2.8 * 2.0) + 2.0;
+        public static final double gearboxToCenter = Units.inchesToMeters(13);
+        public static final double inertia = (batteryWeight * Math.pow(batteryToCenter, 2)) + (gearboxWeight * Math.pow(gearboxToCenter, 2));
+
         // Motor IDs
         public static final int frontLeftID = 1;
         public static final int backLeftID = 2;
