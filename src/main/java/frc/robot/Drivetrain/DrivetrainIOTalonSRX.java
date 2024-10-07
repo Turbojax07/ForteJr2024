@@ -23,27 +23,10 @@ public class DrivetrainIOTalonSRX implements DrivetrainIO {
 
         // Resetting each TalonSRX's settings.
         // The loops make sure that the reset is completed.
-        ErrorCode errorCode = ErrorCode.GENERAL_ERROR;
-        while (errorCode.value != 0) {
-            errorCode = flMotor.configFactoryDefault();
-        }
-        errorCode = ErrorCode.GENERAL_ERROR;
-
-        while (errorCode.value != 0) {
-            errorCode = frMotor.configFactoryDefault();
-        }
-        errorCode = ErrorCode.GENERAL_ERROR;
-
-        while (errorCode.value != 0) {
-            errorCode = blMotor.configFactoryDefault();
-        }
-        errorCode = ErrorCode.GENERAL_ERROR;
-
-        while (errorCode.value != 0) {
-            errorCode = brMotor.configFactoryDefault();
-        }
-        errorCode = ErrorCode.GENERAL_ERROR;
-
+        while (flMotor.configFactoryDefault() != ErrorCode.OK) {}
+        while (frMotor.configFactoryDefault() != ErrorCode.OK) {}
+        while (blMotor.configFactoryDefault() != ErrorCode.OK) {}
+        while (brMotor.configFactoryDefault() != ErrorCode.OK) {}
 
         // Inverting the motors
         flMotor.setInverted(true);
