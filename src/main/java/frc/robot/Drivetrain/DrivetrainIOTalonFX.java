@@ -2,8 +2,8 @@ package frc.robot.Drivetrain;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -65,7 +65,7 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      */
     @Override
     public double getLeftSpeed() {
-        return flMotor.getVelocity().getValueAsDouble() * DriveConstants.conversionFactor;
+        return flMotor.getDutyCycle().getValueAsDouble();
     }
 
     /**
@@ -75,7 +75,7 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      */
     @Override
     public void setLeftSpeed(double speed) {
-        flMotor.setControl(new VelocityVoltage(speed / DriveConstants.conversionFactor));
+        flMotor.setControl(new DutyCycleOut(speed));
     }
 
     /**
@@ -85,15 +85,15 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      */
     @Override
     public double getRightSpeed() {
-        return frMotor.getVelocity().getValueAsDouble() * DriveConstants.conversionFactor;
+        return frMotor.getDutyCycle().getValueAsDouble();
     }
     /**
      * Gets the speed of the right side of the robot.
      * 
-     * @return The speed of the right side of the robot in meters per second.
+     * @return The speed of the right side of the robot in percent output.
      */
     @Override
     public void setRightSpeed(double speed) {
-        frMotor.setControl(new VelocityVoltage(speed / DriveConstants.conversionFactor));
+        frMotor.setControl(new DutyCycleOut(speed));
     }
 }
