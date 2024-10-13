@@ -99,10 +99,10 @@ public class Drivetrain extends SubsystemBase {
         gyro.setYaw(0);
 
         // Setting conversion factors
-        leftEncoder.setPositionConversionFactor(DriveConstants.posConversionFactor);
-        leftEncoder.setVelocityConversionFactor(DriveConstants.velConversionFactor);
-        rightEncoder.setPositionConversionFactor(DriveConstants.posConversionFactor);
-        rightEncoder.setVelocityConversionFactor(DriveConstants.velConversionFactor);
+        leftEncoder.setPositionConversionFactor(DriveConstants.rotToMeters);
+        leftEncoder.setVelocityConversionFactor(DriveConstants.rotToMeters / 60);
+        rightEncoder.setPositionConversionFactor(DriveConstants.rotToMeters);
+        rightEncoder.setVelocityConversionFactor(DriveConstants.rotToMeters / 60);
 
         // Getting PID controllers
         leftPID = flMotor.getPIDController();
@@ -186,24 +186,24 @@ public class Drivetrain extends SubsystemBase {
     }
     
     public void arcadeDrive(double xSpeed, double zRotate) {
-        xSpeed *= DriveConstants.maxDriveSpeed;
-        zRotate *= DriveConstants.maxTurnSpeed;
+        xSpeed *= DriveConstants.maxOpenDriveSpeed;
+        zRotate *= DriveConstants.maxOpenTurnSpeed;
 
         if (xSpeed < 0.1 && xSpeed > -0.1) xSpeed = 0;
         if (zRotate < 0.1 && zRotate > -0.1) zRotate = 0;
 
-        if (xSpeed  != 0 && xSpeed  > 0) xSpeed  -= 0.1;
-        if (xSpeed  != 0 && xSpeed  < 0) xSpeed  += 0.1;
-        if (zRotate != 0 && zRotate > 0) zRotate -= 0.1;
-        if (zRotate != 0 && zRotate < 0) zRotate += 0.1;
+        if (xSpeed  > 0) xSpeed  -= 0.1;
+        if (xSpeed  < 0) xSpeed  += 0.1;
+        if (zRotate > 0) zRotate -= 0.1;
+        if (zRotate < 0) zRotate += 0.1;
 
         flMotor.set(xSpeed - zRotate);
         frMotor.set(xSpeed + zRotate);
     }
 
     public void tankDrive(double leftSpeed, double rightSpeed) {
-        leftSpeed *= DriveConstants.maxDriveSpeed;
-        rightSpeed *= DriveConstants.maxTurnSpeed;
+        leftSpeed *= DriveConstants.maxOpenDriveSpeed;
+        rightSpeed *= DriveConstants.maxOpenTurnSpeed;
 
         if (leftSpeed < 0.1 && leftSpeed > -0.1) leftSpeed = 0;
         if (rightSpeed < 0.1 && rightSpeed > -0.1) rightSpeed = 0;

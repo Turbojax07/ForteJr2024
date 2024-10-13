@@ -1,11 +1,10 @@
 package frc.robot.Drivetrain.Commands;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
+import java.util.function.Supplier;
 
 public class ClosedLoop extends Command {
     private Drivetrain drivetrain;
@@ -22,9 +21,9 @@ public class ClosedLoop extends Command {
     public void execute() {
         drivetrain.closedLoop(
             new ChassisSpeeds(
-                xSpeedSupplier.get() * DriveConstants.maxDriveSpeed,
+                xSpeedSupplier.get() * DriveConstants.maxClosedDriveSpeed,
                 0,
-                zRotateSupplier.get() * DriveConstants.maxTurnSpeed
+                zRotateSupplier.get() * DriveConstants.maxClosedTurnSpeed
             )
         );
     }
