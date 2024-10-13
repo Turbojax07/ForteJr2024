@@ -23,6 +23,15 @@ public final class Constants {
 
     public static final RobotMode currentMode = RobotMode.SIM;
 
+    public static class ControllerConstants {
+        // Controller IDs
+        public static final int driverId = 0;
+        public static final int operatorId = 1;
+
+        // Controller deadband
+        public static final double deadband = 0.1; // Percent
+    }
+
     public static class DriveConstants {
         // Moment of Inertia
         public static final double batteryWeight = Units.lbsToKilograms(12.5);
@@ -44,11 +53,13 @@ public final class Constants {
         public static final double gearRatio = 8.46;
 
         // Max speeds
-        public static final double maxDriveSpeed = 3.5; // Meters / Second
-        public static final double maxTurnSpeed = maxDriveSpeed / (robotWidth / 2); // Meters / Second
+        public static final double maxClosedDriveSpeed = 3.5; // Meters / Second
+        public static final double maxClosedTurnSpeed = maxClosedDriveSpeed / (robotWidth / 2); // Meters / Second
+        public static final double maxOpenDriveSpeed = 1; // Percent
+        public static final double maxOpenTurnSpeed = 0.7; // Percent
 
         // Conversion factors
-        public static final double conversionFactor = wheelCircumference / gearRatio;
+        public static final double rotToMeters = wheelCircumference / gearRatio;
 
         // PIDFF values
         public static final double leftP   = 0.0;
