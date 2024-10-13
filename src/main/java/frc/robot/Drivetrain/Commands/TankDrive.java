@@ -12,7 +12,7 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 
-/** An example command that uses an example subsystem. */
+/** A command that drives a {@link Drivetrain} using open loop tank control. */
 public class TankDrive extends Command {
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private Drivetrain drivetrain;
@@ -20,9 +20,12 @@ public class TankDrive extends Command {
     private Supplier<Double> rSpeedSupplier;
 
     /**
-     * Creates a new ExampleCommand.
+     * Creates a new TankDrive command.
+     * This command drives a {@link Drivetrain} using open loop controls.
+     * It drives with one joystick controlling the speed of the left side of the robot, and another joystick controlling the right side of the robot.
      *
-     * @param subsystem The subsystem used by this command.
+     * @param lSpeedSupplier The supplier for the left speed.
+     * @param rSpeedSupplier The supplier for the right speed.
      */
     public TankDrive(Supplier<Double> lSpeedSupplier, Supplier<Double> rSpeedSupplier) {
         drivetrain = Drivetrain.getInstance();
@@ -33,11 +36,11 @@ public class TankDrive extends Command {
         addRequirements(drivetrain);
     }
 
-    // Called when the command is initially scheduled.
+    /** Called when the command is initially scheduled. */
     @Override
     public void initialize() {}
 
-    // Called every time the scheduler runs while the command is scheduled.
+    /** Called every time the scheduler runs while this command is scheduled. */
     @Override
     public void execute() {
         // Executing the suppliers
@@ -62,15 +65,19 @@ public class TankDrive extends Command {
         drivetrain.tankDrive(lSpeed, rSpeed);
     }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted) {
-        drivetrain.tankDrive(0, 0);
-    }
-
-    // Returns true when the command should end.
+    /**
+     * Called every time the scheduler runs while this command is scheduled.
+     * 
+     * @return Whether or not the command should be canceled.
+     */
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    /** Called when the command is cancelled, either by the scheduler or when {@link TankDrive#isFinished} returns true. */
+    @Override
+    public void end(boolean interrupted) {
+        drivetrain.tankDrive(0, 0);
     }
 }

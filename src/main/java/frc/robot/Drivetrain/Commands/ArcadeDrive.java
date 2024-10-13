@@ -12,7 +12,7 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 
-/** An example command that uses an example subsystem. */
+/** A command that drives a {@link Drivetrain} using open loop tank control. */
 public class ArcadeDrive extends Command {
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final Drivetrain drivetrain;
@@ -20,9 +20,12 @@ public class ArcadeDrive extends Command {
     private final Supplier<Double> zRotatSupplier;
 
     /**
-     * Creates a new ExampleCommand.
+     * Creates a new ArcadeDrive command.
+     * This command drives a {@link Drivetrain} using open loop controls.
+     * It drives with one joystick controlling the forwards/backwards speeds of the robot, and another joystick controlling the turn speeds of the robot.
      *
-     * @param subsystem The subsystem used by this command.
+     * @param xSpeedSupplier The supplier for the x translational speed.
+     * @param zRotateSupplier The supplier for the z rotational speed.
      */
     public ArcadeDrive(Supplier<Double> xSpeedSupplier, Supplier<Double> zRotateSupplier) {
         this.drivetrain = Drivetrain.getInstance();
@@ -33,11 +36,11 @@ public class ArcadeDrive extends Command {
         addRequirements(drivetrain);
     }
 
-    // Called when the command is initially scheduled.
+    /** Called when the command is initially scheduled. */
     @Override
     public void initialize() {}
 
-    // Called every time the scheduler runs while the command is scheduled.
+    /** Called every time the scheduler runs while this command is scheduled. */
     @Override
     public void execute() {
         // Executing the suppliers
@@ -59,18 +62,22 @@ public class ArcadeDrive extends Command {
         zRotat *= DriveConstants.maxOpenTurnSpeed;
 
         // Driving the robot
-        drivetrain.arcadeDrive(xSpeedSupplier.get(), zRotatSupplier.get());
+        drivetrain.arcadeDrive(xSpeed, zRotat);
     }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted) {
-        drivetrain.arcadeDrive(0, 0);
-    }
-
-    // Returns true when the command should end.
+    /**
+     * Called every time the scheduler runs while this command is scheduled.
+     * 
+     * @return Whether or not the command should be canceled.
+     */
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    /** Called when the command is cancelled, either by the scheduler or when {@link ArcadeDrive#isFinished} returns true. */
+    @Override
+    public void end(boolean interrupted) {
+        drivetrain.arcadeDrive(0, 0);
     }
 }

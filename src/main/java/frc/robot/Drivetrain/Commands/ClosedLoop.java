@@ -8,18 +8,34 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 import java.util.function.Supplier;
 
+/** A command that drives a {@link Drivetrain} using closed loop control. */
 public class ClosedLoop extends Command {
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private Drivetrain drivetrain;
     private Supplier<Double> xSpeedSupplier;
     private Supplier<Double> zRotatSupplier;
 
+    /**
+     * Creates a new ClosedLoopDrive command.
+     * This command drives a {@link Drivetrain} using a closed-loop PID controller.
+     * 
+     * @param xSpeedSupplier The supplier for the x translational speed.
+     * @param zRotateSupplier The supplier for the z rotational speed.
+     */
     public ClosedLoop(Supplier<Double> xSpeedSupplier, Supplier<Double> zRotateSupplier) {
         this.drivetrain = Drivetrain.getInstance();
         this.xSpeedSupplier = xSpeedSupplier;
         this.zRotatSupplier = zRotateSupplier;
+
+        // Preventing the robot from being driven by multiple commands.
+        addRequirements(drivetrain);
     }
 
+    /** Called when the command is initially scheduled. */
+    @Override
+    public void initialize() {}
+
+    /** Called every time the scheduler runs while this command is scheduled. */
     @Override
     public void execute() {
         // Executing the suppliers
@@ -44,6 +60,17 @@ public class ClosedLoop extends Command {
         drivetrain.closedLoop(new ChassisSpeeds(xSpeed, 0, zRotat));
     }
 
+    /**
+     * Called every time the scheduler runs while this command is scheduled.
+     * 
+     * @return Whether or not the command should be canceled.
+     */
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
+    /** Called when the command is cancelled, either by the scheduler or when {@link ClosedLoop#isFinished} returns true. */
     @Override
     public void end(boolean interrupted) {
         drivetrain.closedLoop(new ChassisSpeeds());
