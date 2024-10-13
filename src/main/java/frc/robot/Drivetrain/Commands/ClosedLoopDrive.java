@@ -9,7 +9,7 @@ import frc.robot.Drivetrain.Drivetrain;
 import java.util.function.Supplier;
 
 /** A command that drives a {@link Drivetrain} using closed loop control. */
-public class ClosedLoop extends Command {
+public class ClosedLoopDrive extends Command {
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private Drivetrain drivetrain;
     private Supplier<Double> xSpeedSupplier;
@@ -22,7 +22,7 @@ public class ClosedLoop extends Command {
      * @param xSpeedSupplier The supplier for the x translational speed.
      * @param zRotateSupplier The supplier for the z rotational speed.
      */
-    public ClosedLoop(Supplier<Double> xSpeedSupplier, Supplier<Double> zRotateSupplier) {
+    public ClosedLoopDrive(Supplier<Double> xSpeedSupplier, Supplier<Double> zRotateSupplier) {
         this.drivetrain = Drivetrain.getInstance();
         this.xSpeedSupplier = xSpeedSupplier;
         this.zRotatSupplier = zRotateSupplier;
@@ -70,7 +70,7 @@ public class ClosedLoop extends Command {
         return false;
     }
 
-    /** Called when the command is cancelled, either by the scheduler or when {@link ClosedLoop#isFinished} returns true. */
+    /** Called when the command is cancelled, either by the scheduler or when {@link ClosedLoopDrive#isFinished} returns true. */
     @Override
     public void end(boolean interrupted) {
         drivetrain.closedLoop(new ChassisSpeeds());
