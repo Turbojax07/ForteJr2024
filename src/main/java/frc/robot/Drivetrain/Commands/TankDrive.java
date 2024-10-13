@@ -6,7 +6,10 @@ package frc.robot.Drivetrain.Commands;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ControllerConstants;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 
 /** An example command that uses an example subsystem. */
@@ -37,7 +40,26 @@ public class TankDrive extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        drivetrain.tankDrive(lSpeedSupplier.get(), rSpeedSupplier.get());
+        // Executing the suppliers
+        double lSpeed = lSpeedSupplier.get();
+        double rSpeed = rSpeedSupplier.get();
+
+        // Applying a deadband
+        lSpeed = MathUtil.applyDeadband(lSpeed, ControllerConstants.deadband);
+        rSpeed = MathUtil.applyDeadband(rSpeed, ControllerConstants.deadband);
+
+        // Smoothing out the deadband (prevents jumping from 0% to 10%)
+        if (lSpeed != 0 && lSpeed > 0) lSpeed -= ControllerConstants.deadband;
+        if (lSpeed != 0 && lSpeed < 0) lSpeed += ControllerConstants.deadband;
+        if (rSpeed != 0 && rSpeed > 0) rSpeed -= ControllerConstants.deadband;
+        if (rSpeed != 0 && rSpeed < 0) rSpeed += ControllerConstants.deadband;
+
+        // Scaling for max speeds
+        lSpeed *= DriveConstants.maxOpenDriveSpeed;
+        rSpeed *= DriveConstants.maxOpenTurnSpeed;
+
+        // Driving the robot
+        drivetrain.tankDrive(lSpeed, rSpeed);
     }
 
     // Called once the command ends or is interrupted.
