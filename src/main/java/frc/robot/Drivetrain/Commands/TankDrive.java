@@ -11,7 +11,7 @@ import frc.robot.Drivetrain.Drivetrain;
 
 /** An example command that uses an example subsystem. */
 public class TankDrive extends Command {
-  @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
+    @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private Drivetrain drivetrain;
     private Supplier<Double> lSpeedSupplier;
     private Supplier<Double> rSpeedSupplier;
@@ -21,12 +21,13 @@ public class TankDrive extends Command {
      *
      * @param subsystem The subsystem used by this command.
      */
-    public TankDrive(Drivetrain subsystem, Supplier<Double> lSpeedSupplier, Supplier<Double> rSpeedSupplier) {
+    public TankDrive(Supplier<Double> lSpeedSupplier, Supplier<Double> rSpeedSupplier) {
         drivetrain = Drivetrain.getInstance();
         this.lSpeedSupplier = lSpeedSupplier;
         this.rSpeedSupplier = rSpeedSupplier;
+
         // Use addRequirements() here to declare subsystem dependencies.
-        addRequirements(subsystem);
+        addRequirements(drivetrain);
     }
 
     // Called when the command is initially scheduled.
