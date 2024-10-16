@@ -7,6 +7,7 @@ package frc.robot.Drivetrain.Commands;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.DriveConstants;
@@ -46,6 +47,9 @@ public class ArcadeDrive extends Command {
         // Executing the suppliers
         double xSpeed = xSpeedSupplier.get();
         double zRotat = zRotatSupplier.get();
+
+        SmartDashboard.putNumber("/Controller/input1", xSpeed);
+        SmartDashboard.putNumber("/Controller/input4", zRotat);
 
         // Applying a deadband
         MathUtil.applyDeadband(xSpeed, ControllerConstants.deadband);
