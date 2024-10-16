@@ -9,6 +9,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.REVPhysicsSim;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -21,10 +22,14 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
 
 public class Drivetrain extends SubsystemBase {
     // Motors
@@ -32,6 +37,7 @@ public class Drivetrain extends SubsystemBase {
     private CANSparkMax frMotor;
     private CANSparkMax blMotor;
     private CANSparkMax brMotor;
+    private DCMotor lMotors = DCMotor.getNEO(2);
 
     // Encoders
     private RelativeEncoder leftEncoder;
@@ -49,6 +55,7 @@ public class Drivetrain extends SubsystemBase {
 
     // Odometry
     private Pose2d initPose = new Pose2d();
+    private Field2d field = new Field2d();
     private DifferentialDrivePoseEstimator poseEstimator;
 
     // A common instance of the shooter class so that I don't have to outright initialize it anywhere.
@@ -144,28 +151,42 @@ public class Drivetrain extends SubsystemBase {
     }
 
     @Override
+    public void simulationPeriodic() {
+        REVPhysicsSim.getInstance().addSparkMax(blMotor, lMotors);
+    }
+    @Override
     public void periodic() {
+
+        // Updating the robot pose.
+        poseEstimator.update(getAngle(), getPositions());
+
+        // Updating the robot pose on the field object.
+        field.setRobotPose(getPose());
+
+        // Pushing values to NetworkTables
         SmartDashboard.putNumber("/Drivetrain/Left_Actual_MPS", getLeftVelocity());
         SmartDashboard.putNumber("/Drivetrain/Right_Actual_MPS", getRightVelocity());
         SmartDashboard.putNumber("/Drivetrain/Angle", getAngle().getRadians());
+        SmartDashboard.putData("/Drivetrain/Field", field);
     }
 
     public Rotation2d getAngle() {
         return Rotation2d.fromDegrees(gyro.getYaw());
     }
+    
     public Pose2d getPose() {
         return poseEstimator.getEstimatedPosition();
     }
 
     public void setPose(Pose2d newPose) {
-        poseEstimator.resetPosition(getAngle(), getPosition(), newPose);
+        poseEstimator.resetPosition(getAngle(), getPositions(), newPose);
     }
 
     public ChassisSpeeds getSpeeds() {
         return kinematics.toChassisSpeeds(new DifferentialDriveWheelSpeeds(getLeftVelocity(), getRightVelocity()));
     }
 
-    public DifferentialDriveWheelPositions getPosition() {
+    public DifferentialDriveWheelPositions getPositions() {
         return new DifferentialDriveWheelPositions(getLeftPosition(), getRightPosition());
     }
 
@@ -174,7 +195,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public double getLeftVelocity() {
-        return leftEncoder.getVelocity();
+        return flMotor.get();
     }
 
     public double getRightPosition() {
@@ -182,37 +203,21 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public double getRightVelocity() {
-        return rightEncoder.getVelocity();
+        frMotor.getBusVoltage();
+        frMotor.getOutputCurrent();
+
+        return frMotor.get();
     }
     
     public void arcadeDrive(double xSpeed, double zRotate) {
-        xSpeed *= DriveConstants.maxOpenDriveSpeed;
-        zRotate *= DriveConstants.maxOpenTurnSpeed;
-
-        if (xSpeed < 0.1 && xSpeed > -0.1) xSpeed = 0;
-        if (zRotate < 0.1 && zRotate > -0.1) zRotate = 0;
-
-        if (xSpeed  > 0) xSpeed  -= 0.1;
-        if (xSpeed  < 0) xSpeed  += 0.1;
-        if (zRotate > 0) zRotate -= 0.1;
-        if (zRotate < 0) zRotate += 0.1;
+        SmartDashboard.putNumber("/Drivetrain/Left_Expected_Speed", xSpeed - zRotate);
+        SmartDashboard.putNumber("/Drivetrain/Right_Expected_Speed", xSpeed + zRotate);
 
         flMotor.set(xSpeed - zRotate);
         frMotor.set(xSpeed + zRotate);
     }
 
     public void tankDrive(double leftSpeed, double rightSpeed) {
-        leftSpeed *= DriveConstants.maxOpenDriveSpeed;
-        rightSpeed *= DriveConstants.maxOpenTurnSpeed;
-
-        if (leftSpeed < 0.1 && leftSpeed > -0.1) leftSpeed = 0;
-        if (rightSpeed < 0.1 && rightSpeed > -0.1) rightSpeed = 0;
-
-        if (leftSpeed  != 0 && leftSpeed  > 0) leftSpeed  -= 0.1;
-        if (leftSpeed  != 0 && leftSpeed  < 0) leftSpeed  += 0.1;
-        if (rightSpeed != 0 && rightSpeed > 0) rightSpeed -= 0.1;
-        if (rightSpeed != 0 && rightSpeed < 0) rightSpeed += 0.1;
-
         flMotor.set(leftSpeed);
         frMotor.set(rightSpeed);
     }

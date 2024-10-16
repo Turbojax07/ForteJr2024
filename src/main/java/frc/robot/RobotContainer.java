@@ -77,24 +77,4 @@ public class RobotContainer {
     public Command getRealTeleopCommand() {
         return new ArcadeDrive(()-> driver.getLeftY(), ()-> driver.getRightX());
     }
-
-    /**
-     * Use this to pass an autonomous command to the {@link Robot} class.
-     * It gets the command meant to run on a simulated robot, not a real one.
-     *
-     * @return The command to run in Autonomous mode.
-     */
-    public Command getSimAutoCommand() {
-        return new PrintCommand("No auto lol");
-    }
-
-    /**
-     * Use this to pass a teleop command to the {@link Robot} class.
-     * It gets the command meant to run on a simulated robot, not a real one.
-     * 
-     * @return The command to run in Teleop mode.
-     */
-    public Command getSimTeleopCommand() {
-        return new ArcadeDrive(()-> driver.getLeftY(), ()-> driver.getRightX());
-    }
 }
