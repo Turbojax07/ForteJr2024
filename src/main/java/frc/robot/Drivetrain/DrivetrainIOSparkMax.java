@@ -53,9 +53,9 @@ public class DrivetrainIOSparkMax implements DrivetrainIO {
     }
 
     @Override
-    public void updateInputs(DrivetrainIOInputs inputs) {
-        inputs.leftVelocity = getLeftSpeed();
-        inputs.rightVelocity = getRightSpeed();
+    public void updateInputs() {
+        DrivetrainIOInputs.leftVelocity = getLeftSpeed();
+        DrivetrainIOInputs.rightVelocity = getRightSpeed();
     }
 
     @Override

@@ -4,13 +4,12 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface DrivetrainIO {
     @AutoLog
-    // Inputs that will be saved to the logfile.
-    public class DrivetrainIOInputs {
-        public double leftVelocity;
-        public double rightVelocity;
+    public static class DrivetrainIOInputs {
+        public static double leftVelocity;
+        public static double rightVelocity;
     }
 
-    public void updateInputs(DrivetrainIOInputs inputs);
+    public void updateInputs();
     public double getLeftSpeed();
     public void setLeftSpeed(double speed);
     public double getRightSpeed();

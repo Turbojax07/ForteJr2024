@@ -54,9 +54,9 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      * @param inputs An instance of the class that contains the inputs that need to be logged.
      */
     @Override
-    public void updateInputs(DrivetrainIOInputs inputs) {
-        inputs.leftVelocity = getLeftSpeed();
-        inputs.rightVelocity = getRightSpeed();
+    public void updateInputs() {
+        DrivetrainIOInputs.leftVelocity = getLeftSpeed();
+        DrivetrainIOInputs.rightVelocity = getRightSpeed();
     }
 
     /**
