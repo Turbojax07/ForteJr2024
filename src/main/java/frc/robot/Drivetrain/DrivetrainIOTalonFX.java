@@ -4,9 +4,9 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants.DriveConstants;
 
@@ -55,8 +55,29 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      */
     @Override
     public void updateInputs() {
-        DrivetrainIOInputs.leftVelocity = getLeftSpeed();
-        DrivetrainIOInputs.rightVelocity = getRightSpeed();
+        // Voltages
+        DrivetrainIOInputsAutoLogged.leftVoltage = getLeftVoltage();
+        DrivetrainIOInputsAutoLogged.rightVoltage = getRightVoltage();
+
+        // Percentages
+        DrivetrainIOInputsAutoLogged.leftPercent = getLeftPercent();
+        DrivetrainIOInputsAutoLogged.rightPercent = getRightPercent();
+
+        // Positions
+        DrivetrainIOInputsAutoLogged.leftPosition = flMotor.getPosition().getValue();
+        DrivetrainIOInputsAutoLogged.rightPosition = frMotor.getPosition().getValue();
+
+        // Current
+        DrivetrainIOInputsAutoLogged.flCurrent = flMotor.getStatorCurrent().getValue();
+        DrivetrainIOInputsAutoLogged.frCurrent = frMotor.getStatorCurrent().getValue();
+        DrivetrainIOInputsAutoLogged.blCurrent = blMotor.getStatorCurrent().getValue();
+        DrivetrainIOInputsAutoLogged.brCurrent = brMotor.getStatorCurrent().getValue();
+
+        // Temperature
+        DrivetrainIOInputsAutoLogged.flTemperature = flMotor.getDeviceTemp().getValue();
+        DrivetrainIOInputsAutoLogged.frTemperature = frMotor.getDeviceTemp().getValue();
+        DrivetrainIOInputsAutoLogged.blTemperature = blMotor.getDeviceTemp().getValue();
+        DrivetrainIOInputsAutoLogged.brTemperature = brMotor.getDeviceTemp().getValue();
     }
 
     /**
@@ -65,38 +86,81 @@ public class DrivetrainIOTalonFX implements DrivetrainIO {
      * @return The speed of the left side of the robot in percent output.
      */
     @Override
-    public double getLeftSpeed() {
-        return flMotor.getDutyCycle().getValueAsDouble();
+    public double getLeftPercent() {
+        return flMotor.get();
     }
 
     /**
-     * Gets the speed of the left side of the robot.
+     * Sets the speed of the left side of the robot.
      * 
-     * @return The speed of the left side of the robot in percent output.
+     * @param percent The speed of the left side of the robot in percent output.
      */
     @Override
-    public void setLeftSpeed(double speed) {
-        speed = MathUtil.clamp(speed, -1, 1);
-        flMotor.setControl(new DutyCycleOut(speed));
+    public void setLeftPercent(double percent) {
+        percent = MathUtil.clamp(percent, -1, 1);
+        flMotor.setControl(new DutyCycleOut(percent));
     }
 
-    /**
-     * Gets the speed of the left side of the robot.
-     * 
-     * @return The speed of the left side of the robot in percent output.
-     */
-    @Override
-    public double getRightSpeed() {
-        return frMotor.getDutyCycle().getValueAsDouble();
-    }
     /**
      * Gets the speed of the right side of the robot.
      * 
      * @return The speed of the right side of the robot in percent output.
      */
     @Override
-    public void setRightSpeed(double speed) {
-        speed = MathUtil.clamp(speed, -1, 1);
-        frMotor.setControl(new DutyCycleOut(speed));
+    public double getRightPercent() {
+        return frMotor.get();
+    }
+
+    /**
+     * Sets the speed of the right side of the robot.
+     * 
+     * @param percent The speed of the right side of the robot in percent output.
+     */
+    @Override
+    public void setRightPercent(double percent) {
+        percent = MathUtil.clamp(percent, -1, 1);
+        frMotor.setControl(new DutyCycleOut(percent));
+    }
+
+    /**
+     * Gets the speed of the right side of the robot.
+     * 
+     * @return The speed of the right side of the robot in volts.
+     */
+    @Override
+    public double getLeftVoltage() {
+        return flMotor.getMotorVoltage().getValue();
+    }
+
+    /**
+     * Sets the speed of the right side of the robot.
+     * 
+     * @param volts The speed of the right side of the robot in volts.
+     */
+    @Override
+    public void setLeftVoltage(double volts) {
+        volts = MathUtil.clamp(volts, -1, 1);
+        flMotor.setControl(new VoltageOut(volts));
+    }
+
+    /**
+     * Gets the speed of the right side of the robot.
+     * 
+     * @return The speed of the right side of the robot in volts.
+     */
+    @Override
+    public double getRightVoltage() {
+        return frMotor.getMotorVoltage().getValue();
+    }
+
+    /**
+     * Sets the speed of the right side of the robot.
+     * 
+     * @param volts The speed of the right side of the robot in volts.
+     */
+    @Override
+    public void setRightVoltage(double volts) {
+        volts = MathUtil.clamp(volts, -1, 1);
+        frMotor.setControl(new VoltageOut(volts));
     }
 }

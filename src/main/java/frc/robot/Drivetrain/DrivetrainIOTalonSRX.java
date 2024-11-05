@@ -53,8 +53,29 @@ public class DrivetrainIOTalonSRX implements DrivetrainIO {
      */
     @Override
     public void updateInputs() {
-        DrivetrainIOInputs.leftVelocity = getLeftSpeed();
-        DrivetrainIOInputs.rightVelocity = getRightSpeed();
+        // Voltages
+        DrivetrainIOInputsAutoLogged.leftVoltage = getLeftVoltage();
+        DrivetrainIOInputsAutoLogged.rightVoltage = getRightVoltage();
+
+        // Percentages
+        DrivetrainIOInputsAutoLogged.leftPercent = getLeftPercent();
+        DrivetrainIOInputsAutoLogged.rightPercent = getRightPercent();
+
+        // Positions
+        DrivetrainIOInputsAutoLogged.leftPosition = flMotor.getSelectedSensorPosition();
+        DrivetrainIOInputsAutoLogged.rightPosition = frMotor.getSelectedSensorPosition();
+
+        // Current
+        DrivetrainIOInputsAutoLogged.flCurrent = flMotor.getStatorCurrent();
+        DrivetrainIOInputsAutoLogged.frCurrent = frMotor.getStatorCurrent();
+        DrivetrainIOInputsAutoLogged.blCurrent = blMotor.getStatorCurrent();
+        DrivetrainIOInputsAutoLogged.brCurrent = brMotor.getStatorCurrent();
+
+        // Temperature
+        DrivetrainIOInputsAutoLogged.flTemperature = flMotor.getTemperature();
+        DrivetrainIOInputsAutoLogged.frTemperature = frMotor.getTemperature();
+        DrivetrainIOInputsAutoLogged.blTemperature = blMotor.getTemperature();
+        DrivetrainIOInputsAutoLogged.brTemperature = brMotor.getTemperature();
     }
 
     /**
@@ -63,19 +84,19 @@ public class DrivetrainIOTalonSRX implements DrivetrainIO {
      * @return The speed of the left side of the robot in percent output.
      */
     @Override
-    public double getLeftSpeed() {
+    public double getLeftPercent() {
         return flMotor.getMotorOutputPercent();
     }
 
     /**
      * Sets the speed of the left side of the robot.
      * 
-     * @param speed The speed of the left side of the robot in percent output.
+     * @param percent The speed of the left side of the robot in percent output.
      */
     @Override
-    public void setLeftSpeed(double speed) {
-        speed = MathUtil.clamp(speed, -1, 1);
-        flMotor.set(ControlMode.PercentOutput, speed);
+    public void setLeftPercent(double percent) {
+        percent = MathUtil.clamp(percent, -1, 1);
+        flMotor.set(ControlMode.PercentOutput, percent);
     }
 
     /**
@@ -84,18 +105,60 @@ public class DrivetrainIOTalonSRX implements DrivetrainIO {
      * @return The speed of the right side of the robot in percent output.
      */
     @Override
-    public double getRightSpeed() {
+    public double getRightPercent() {
         return frMotor.getMotorOutputPercent();
     }
 
     /**
      * Sets the speed of the right side of the robot.
      * 
-     * @param speed The speed of the right side of the robot in percent output.
+     * @param percent The speed of the right side of the robot in percent output.
      */
     @Override
-    public void setRightSpeed(double speed) {
-        speed = MathUtil.clamp(speed, -1, 1);
-        frMotor.set(ControlMode.PercentOutput, speed);
+    public void setRightPercent(double percent) {
+        percent = MathUtil.clamp(percent, -1, 1);
+        frMotor.set(ControlMode.PercentOutput, percent);
+    }
+
+    /**
+     * Gets the speed of the right side of the robot.
+     * 
+     * @return The speed of the right side of the robot in volts.
+     */
+    @Override
+    public double getLeftVoltage() {
+        return flMotor.getMotorOutputPercent();
+    }
+
+    /**
+     * Sets the speed of the right side of the robot.
+     * 
+     * @param volts The speed of the right side of the robot in volts.
+     */
+    @Override
+    public void setLeftVoltage(double volts) {
+        volts = MathUtil.clamp(volts, -1, 1);
+        flMotor.set(ControlMode.PercentOutput, volts);
+    }
+
+    /**
+     * Gets the speed of the right side of the robot.
+     * 
+     * @return The speed of the right side of the robot in volts.
+     */
+    @Override
+    public double getRightVoltage() {
+        return frMotor.getMotorOutputPercent();
+    }
+
+    /**
+     * Sets the speed of the right side of the robot.
+     * 
+     * @param volts The speed of the right side of the robot in volts.
+     */
+    @Override
+    public void setRightVoltage(double volts) {
+        volts = MathUtil.clamp(volts, -1, 1);
+        frMotor.set(ControlMode.PercentOutput, volts);
     }
 }
