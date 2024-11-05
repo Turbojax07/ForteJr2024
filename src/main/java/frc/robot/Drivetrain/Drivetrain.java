@@ -4,16 +4,9 @@
 
 package frc.robot.Drivetrain;
 
-import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.ReplanningConfig;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,22 +17,11 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
 public class Drivetrain extends SubsystemBase {
-    // Motors
-    private CANSparkMax flMotor;
-    private CANSparkMax frMotor;
-    private CANSparkMax blMotor;
-    private CANSparkMax brMotor;
-
-    // Encoders
-    private RelativeEncoder leftEncoder;
-    private RelativeEncoder rightEncoder;
-
-    // PID Controllers
-    private SparkPIDController leftPID;
-    private SparkPIDController rightPID;
+    private DrivetrainIO drivetrainIO;
 
     // Gyro
     private PigeonIMU gyro;
@@ -62,68 +44,18 @@ public class Drivetrain extends SubsystemBase {
 
     /** Creates a new ExampleSubsystem. */
     public Drivetrain() {
-        // Getting motors
-        flMotor = new CANSparkMax(DriveConstants.frontLeftID, MotorType.kBrushless);
-        frMotor = new CANSparkMax(DriveConstants.frontRightID, MotorType.kBrushless);
-        blMotor = new CANSparkMax(DriveConstants.backLeftID, MotorType.kBrushless);
-        brMotor = new CANSparkMax(DriveConstants.backRightID, MotorType.kBrushless);
+        // Determining the IO interface to use
+        drivetrainIO = Constants.currentMode.io;
 
-        // Resetting motors
-        flMotor.restoreFactoryDefaults();
-        frMotor.restoreFactoryDefaults();
-        blMotor.restoreFactoryDefaults();
-        brMotor.restoreFactoryDefaults();
-
-        // Creating followers
-        blMotor.follow(flMotor);
-        brMotor.follow(frMotor);
-
-        // Inverting motors
-        blMotor.setInverted(true);
-        brMotor.setInverted(false);
-        flMotor.setInverted(true);
-        frMotor.setInverted(false);
-
-        // Setting idle modes
-        flMotor.setIdleMode(IdleMode.kBrake);
-        blMotor.setIdleMode(IdleMode.kBrake);
-        frMotor.setIdleMode(IdleMode.kBrake);
-        brMotor.setIdleMode(IdleMode.kBrake);
-
-        // Getting encoders
-        leftEncoder = flMotor.getEncoder();
-        rightEncoder = frMotor.getEncoder();
+        // Pushing a warning to SmartDashboard if TalonSRXs are in use
+        // They don't have built-in encoders and cannot run closed loop
+        if (drivetrainIO instanceof DrivetrainIOTalonSRX) {
+            SmartDashboard.putString("/Warnings/OpenLoop", "Running open loop!  Logged values will be zero.");
+        }
 
         // Getting gyro
         gyro = new PigeonIMU(10);
         gyro.setYaw(0);
-
-        // Setting conversion factors
-        leftEncoder.setPositionConversionFactor(DriveConstants.rotToMeters);
-        leftEncoder.setVelocityConversionFactor(DriveConstants.rotToMeters / 60);
-        rightEncoder.setPositionConversionFactor(DriveConstants.rotToMeters);
-        rightEncoder.setVelocityConversionFactor(DriveConstants.rotToMeters / 60);
-
-        // Getting PID controllers
-        leftPID = flMotor.getPIDController();
-        rightPID = frMotor.getPIDController();
-
-        // Setting PIDFF values
-        leftPID.setP(DriveConstants.leftP);
-        leftPID.setI(DriveConstants.leftI);
-        leftPID.setD(DriveConstants.leftD);
-        leftPID.setFF(DriveConstants.leftFF);
-
-        rightPID.setP(DriveConstants.rightP);
-        rightPID.setI(DriveConstants.rightI);
-        rightPID.setD(DriveConstants.rightD);
-        rightPID.setFF(DriveConstants.rightFF);
-
-        // Saving configs
-        brMotor.burnFlash();
-        blMotor.burnFlash();
-        frMotor.burnFlash();
-        flMotor.burnFlash();
 
         // Initializing the kinematics
         kinematics = new DifferentialDriveKinematics(DriveConstants.robotWidth);
@@ -148,11 +80,16 @@ public class Drivetrain extends SubsystemBase {
         SmartDashboard.putNumber("/Drivetrain/Left_Actual_MPS", getLeftVelocity());
         SmartDashboard.putNumber("/Drivetrain/Right_Actual_MPS", getRightVelocity());
         SmartDashboard.putNumber("/Drivetrain/Angle", getAngle().getRadians());
+
+        drivetrainIO.updateInputs();
+
+        poseEstimator.update(getAngle(), getPosition());
     }
 
     public Rotation2d getAngle() {
         return Rotation2d.fromDegrees(gyro.getYaw());
     }
+
     public Pose2d getPose() {
         return poseEstimator.getEstimatedPosition();
     }
@@ -170,35 +107,35 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public double getLeftPosition() {
-        return leftEncoder.getPosition();
+        return DrivetrainIOInputsAutoLogged.leftPosition;
     }
 
     public double getLeftVelocity() {
-        return leftEncoder.getVelocity();
+        return DrivetrainIOInputsAutoLogged.leftPercent;
     }
 
     public double getRightPosition() {
-        return rightEncoder.getPosition();
+        return DrivetrainIOInputsAutoLogged.rightPosition;
     }
 
     public double getRightVelocity() {
-        return rightEncoder.getVelocity();
+        return DrivetrainIOInputsAutoLogged.rightPercent;
+    }
+
+    public void setSpeeds(double leftSpeed, double rightSpeed) {
+        drivetrainIO.setLeftPercent(leftSpeed);
+        drivetrainIO.setRightPercent(rightSpeed);
+    }
+
+    public void setSpeeds(ChassisSpeeds speeds) {
+        DifferentialDriveWheelSpeeds newSpeeds = kinematics.toWheelSpeeds(speeds);
+
+        setSpeeds(newSpeeds.leftMetersPerSecond, newSpeeds.rightMetersPerSecond);
     }
     
     public void arcadeDrive(double xSpeed, double zRotate) {
-        xSpeed *= DriveConstants.maxOpenDriveSpeed;
-        zRotate *= DriveConstants.maxOpenTurnSpeed;
-
-        if (xSpeed < 0.1 && xSpeed > -0.1) xSpeed = 0;
-        if (zRotate < 0.1 && zRotate > -0.1) zRotate = 0;
-
-        if (xSpeed  > 0) xSpeed  -= 0.1;
-        if (xSpeed  < 0) xSpeed  += 0.1;
-        if (zRotate > 0) zRotate -= 0.1;
-        if (zRotate < 0) zRotate += 0.1;
-
-        flMotor.set(xSpeed - zRotate);
-        frMotor.set(xSpeed + zRotate);
+        drivetrainIO.setLeftPercent(xSpeed - zRotate);
+        drivetrainIO.setRightPercent(xSpeed + zRotate);
     }
 
     public void tankDrive(double leftSpeed, double rightSpeed) {
@@ -213,17 +150,12 @@ public class Drivetrain extends SubsystemBase {
         if (rightSpeed != 0 && rightSpeed > 0) rightSpeed -= 0.1;
         if (rightSpeed != 0 && rightSpeed < 0) rightSpeed += 0.1;
 
-        flMotor.set(leftSpeed);
-        frMotor.set(rightSpeed);
+        drivetrainIO.setLeftPercent(leftSpeed);
+        drivetrainIO.setRightPercent(rightSpeed);
     }
 
     public void closedLoop(ChassisSpeeds speeds) {
         DifferentialDriveWheelSpeeds newSpeeds = kinematics.toWheelSpeeds(speeds);
 
-        SmartDashboard.putNumber("/Drivetrain/Left_Expected_MPS", newSpeeds.leftMetersPerSecond);
-        SmartDashboard.putNumber("/Drivetrain/Right_Expected_MPS", newSpeeds.rightMetersPerSecond);
-
-        leftPID.setReference(newSpeeds.leftMetersPerSecond, ControlType.kVelocity);
-        rightPID.setReference(newSpeeds.rightMetersPerSecond, ControlType.kVelocity);
     }
 }
