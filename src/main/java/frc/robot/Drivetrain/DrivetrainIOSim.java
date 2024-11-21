@@ -1,15 +1,12 @@
 package frc.robot.Drivetrain;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants.DriveConstants;
 
 public class DrivetrainIOSim implements DrivetrainIO {
@@ -67,14 +64,14 @@ public class DrivetrainIOSim implements DrivetrainIO {
         DrivetrainIOInputsAutoLogged.rightPercent = getRightPercent();
 
         // Positions
-        DrivetrainIOInputsAutoLogged.leftPosition = flMotor.getPosition().getValueAsDouble() * DriveConstants.rotToMeters;
-        DrivetrainIOInputsAutoLogged.rightPosition = frMotor.getPosition().getValueAsDouble() * DriveConstants.rotToMeters;
+        DrivetrainIOInputsAutoLogged.leftPosition = flMotor.getPosition().getValue() * DriveConstants.rotToMeters;
+        DrivetrainIOInputsAutoLogged.rightPosition = frMotor.getPosition().getValue() * DriveConstants.rotToMeters;
 
         // Current
-        DrivetrainIOInputsAutoLogged.flCurrent = flMotor.getStatorCurrent();
-        DrivetrainIOInputsAutoLogged.frCurrent = frMotor.getStatorCurrent();
-        DrivetrainIOInputsAutoLogged.blCurrent = blMotor.getStatorCurrent();
-        DrivetrainIOInputsAutoLogged.brCurrent = brMotor.getStatorCurrent();
+        DrivetrainIOInputsAutoLogged.flCurrent = flMotor.getStatorCurrent().getValue();
+        DrivetrainIOInputsAutoLogged.frCurrent = frMotor.getStatorCurrent().getValue();
+        DrivetrainIOInputsAutoLogged.blCurrent = blMotor.getStatorCurrent().getValue();
+        DrivetrainIOInputsAutoLogged.brCurrent = brMotor.getStatorCurrent().getValue();
 
         // Temperature
         DrivetrainIOInputsAutoLogged.flTemperature = 0;
@@ -102,7 +99,8 @@ public class DrivetrainIOSim implements DrivetrainIO {
     public void setLeftPercent(double percent) {
         // The left motors aren't already reversed, so they're being reversed again.
         percent = -MathUtil.clamp(percent, -1, 1);
-        leftMotors.setInputVoltage(percent * 12);
+
+        flMotor.set(percent);
     }
 
     /**
@@ -123,7 +121,8 @@ public class DrivetrainIOSim implements DrivetrainIO {
     @Override
     public void setRightPercent(double percent) {
         percent = MathUtil.clamp(percent, -1, 1);
-        rightMotors.setInputVoltage(percent * 12);
+        
+        frMotor.set(percent);
     }
 
     /**
@@ -133,7 +132,7 @@ public class DrivetrainIOSim implements DrivetrainIO {
      */
     @Override
     public double getLeftVoltage() {
-        return leftMotors.get;
+        return flMotor.getMotorVoltage().getValue();
     }
 
     /**
