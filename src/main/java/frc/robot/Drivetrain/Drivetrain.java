@@ -17,7 +17,6 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
 public class Drivetrain extends SubsystemBase {
@@ -44,9 +43,6 @@ public class Drivetrain extends SubsystemBase {
 
     /** Creates a new ExampleSubsystem. */
     public Drivetrain() {
-        // Determining the IO interface to use
-        drivetrainIO = Constants.currentMode.io;
-
         // Pushing a warning to SmartDashboard if TalonSRXs are in use
         // They don't have built-in encoders and cannot run closed loop
         if (drivetrainIO instanceof DrivetrainIOTalonSRX) {
@@ -156,6 +152,7 @@ public class Drivetrain extends SubsystemBase {
 
     public void closedLoop(ChassisSpeeds speeds) {
         DifferentialDriveWheelSpeeds newSpeeds = kinematics.toWheelSpeeds(speeds);
-
+        drivetrainIO.setLeftPercent(newSpeeds.leftMetersPerSecond);
+        drivetrainIO.setRightPercent(newSpeeds.rightMetersPerSecond);
     }
 }
