@@ -15,13 +15,7 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static enum RobotMode {
-        REAL,
-        SIM,
-        REPLAY
-    }
-
-    public static final RobotMode currentMode = RobotMode.SIM;
+    public static final boolean isReplay = false;
 
     public static class ControllerConstants {
         // Controller IDs

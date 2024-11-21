@@ -4,16 +4,13 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.LogFileUtil;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -34,22 +31,17 @@ public class Robot extends LoggedRobot {
         // Saving the project name
         Logger.recordMetadata("ProjectName", "ForteJr");
 
-        // Configuring the Logger based on the robot's mode.
-        switch (Constants.currentMode) {
-            case REAL:
-                Logger.addDataReceiver(new WPILOGWriter("/U/logs"));
-                Logger.addDataReceiver(new NT4Publisher());
-                new PowerDistribution(1, PowerDistribution.ModuleType.kRev);
-                break;
-            case SIM:
-                Logger.addDataReceiver(new WPILOGWriter("sim_logs"));
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
-            case REPLAY:
-                Logger.setReplaySource(new WPILOGReader(LogFileUtil.findReplayLog()));
-                Logger.addDataReceiver(new WPILOGWriter("replay_logs"));
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
+        // Adding an NT4Publisher
+        Logger.addDataReceiver(new NT4Publisher());
+
+        if (!isSimulation()) {
+            // Adding a WPILOGWriter if running for real.
+            Logger.addDataReceiver(new WPILOGWriter());
+        } else {
+            // Adding a replay source if running in sim and as a replay
+            if (Constants.isReplay) {
+                Logger.setReplaySource(new WPILOGReader("log.wpilog"));
+            }
         }
 
         // Starting the Logger
@@ -58,6 +50,7 @@ public class Robot extends LoggedRobot {
         // Instantiate the RobotContainer.  This will assign all our button bindings.
         RobotContainer robotContainer = RobotContainer.getInstance();
 
+        // Getting the commands for each mode from RobotContainer.
         autonomousCommand = robotContainer.getRealAutoCommand();
         teleopCommand = robotContainer.getRealTeleopCommand();
     }
@@ -96,7 +89,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousInit() {
-        autonomousCommand.schedule();
+        if (autonomousCommand != null) {
+            autonomousCommand.schedule();
+        }
     }
 
     /** This function is called periodically during Autonomous. */
@@ -109,7 +104,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousExit() {
-        autonomousCommand.cancel();
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
     }
 
     /**
@@ -118,7 +115,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void teleopInit() {
-        teleopCommand.schedule();
+        if (teleopCommand != null) {
+            teleopCommand.schedule();
+        }
     }
 
     /** This function is called periodically during Teleop. */
@@ -131,7 +130,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void teleopExit() {
-        teleopCommand.cancel();
+        if (teleopCommand != null) {
+            teleopCommand.cancel();
+        }
     }
 
     /** This function is called once each time the robot enters Test. */
@@ -151,12 +152,7 @@ public class Robot extends LoggedRobot {
 
     /** This function is called once each time the robot enters Simulation. */
     @Override
-    public void simulationInit() {
-        RobotContainer robotContainer = RobotContainer.getInstance();
-
-        autonomousCommand = robotContainer.getSimAutoCommand();
-        teleopCommand = robotContainer.getSimTeleopCommand();
-    }
+    public void simulationInit() {}
 
     /** This function is called periodically during Simulation. */
     @Override
