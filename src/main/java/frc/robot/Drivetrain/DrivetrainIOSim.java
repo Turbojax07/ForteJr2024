@@ -1,49 +1,22 @@
 package frc.robot.Drivetrain;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import frc.robot.Constants.DriveConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class DrivetrainIOSim implements DrivetrainIO {
-    private TalonFX flMotor;
-    private TalonFX frMotor;
-    private TalonFX blMotor;
-    private TalonFX brMotor;
+    private DifferentialDrivetrainSim driveSim;
+
+    private DrivetrainIOInputsAutoLogged inputs;
+
+    private double leftVolts;
+    private double rightVolts;
     
-
     public DrivetrainIOSim() {
-        // Initializing Motors
-        flMotor = new TalonFX(DriveConstants.frontLeftID);
-        frMotor = new TalonFX(DriveConstants.frontRightID);
-        blMotor = new TalonFX(DriveConstants.backLeftID);
-        brMotor = new TalonFX(DriveConstants.backRightID);
+        inputs = new DrivetrainIOInputsAutoLogged();
 
-        // resetting
-        flMotor.getConfigurator().apply(new TalonFXConfiguration());
-        frMotor.getConfigurator().apply(new TalonFXConfiguration());
-        blMotor.getConfigurator().apply(new TalonFXConfiguration());
-        brMotor.getConfigurator().apply(new TalonFXConfiguration());
-
-        // neutral modes
-        flMotor.setNeutralMode(NeutralModeValue.Brake);
-        frMotor.setNeutralMode(NeutralModeValue.Brake);
-        blMotor.setNeutralMode(NeutralModeValue.Brake);
-        brMotor.setNeutralMode(NeutralModeValue.Brake);
-
-        // inversions
-        flMotor.setInverted(true);
-        frMotor.setInverted(false);
-        blMotor.setInverted(true);
-        brMotor.setInverted(false);
-
-        // followers
-        blMotor.setControl(new Follower(flMotor.getDeviceID(), false));
-        brMotor.setControl(new Follower(frMotor.getDeviceID(), false));
+        driveSim = new DifferentialDrivetrainSim(DCMotor.getNEO(2), DriveConstants.gearRatio, DriveConstants.momentOfInertia, DriveConstants.mass, DriveConstants.wheelRadius, DriveConstants.robotWidth, null);
     }
 
     /**
@@ -54,116 +27,104 @@ public class DrivetrainIOSim implements DrivetrainIO {
      */
     @Override
     public void updateInputs() {
+        driveSim.setInputs(leftVolts, rightVolts);
+
+        driveSim.update(0.02);
 
         // Voltages
-        DrivetrainIOInputsAutoLogged.leftVoltage = getLeftVoltage();
-        DrivetrainIOInputsAutoLogged.rightVoltage = getRightVoltage();
+        inputs.leftVoltage = getLeftVoltage();
+        inputs.rightVoltage = getRightVoltage();
 
-        // Percentages
-        DrivetrainIOInputsAutoLogged.leftPercent = getLeftPercent();
-        DrivetrainIOInputsAutoLogged.rightPercent = getRightPercent();
+        // Distance
+        inputs.leftDistance = getLeftDistance();
+        inputs.rightDistance = getRightDistance();
 
         // Positions
-        DrivetrainIOInputsAutoLogged.leftPosition = flMotor.getPosition().getValue() * DriveConstants.rotToMeters;
-        DrivetrainIOInputsAutoLogged.rightPosition = frMotor.getPosition().getValue() * DriveConstants.rotToMeters;
+        inputs.leftPosition = getLeftPosition();
+        inputs.rightPosition = getRightPosition();
 
         // Current
-        DrivetrainIOInputsAutoLogged.flCurrent = flMotor.getStatorCurrent().getValue();
-        DrivetrainIOInputsAutoLogged.frCurrent = frMotor.getStatorCurrent().getValue();
-        DrivetrainIOInputsAutoLogged.blCurrent = blMotor.getStatorCurrent().getValue();
-        DrivetrainIOInputsAutoLogged.brCurrent = brMotor.getStatorCurrent().getValue();
+        inputs.leftCurrent = getLeftCurrent();
+        inputs.rightCurrent = getRightCurrent();
 
         // Temperature
-        DrivetrainIOInputsAutoLogged.flTemperature = 0;
-        DrivetrainIOInputsAutoLogged.frTemperature = 0;
-        DrivetrainIOInputsAutoLogged.blTemperature = 0;
-        DrivetrainIOInputsAutoLogged.brTemperature = 0;
+        inputs.leftTemperature = getLeftTemperature();
+        inputs.rightTemperature = getRightTemperature();
+
+        // Velocity
+        inputs.leftVelocity = getLeftVelocity();
+        inputs.rightVelocity = getRightVelocity();
+
+        Logger.processInputs("DrivetrainSimInputs", inputs);
     }
 
-    /**
-     * Gets the speed of the left side of the robot.
-     * 
-     * @return The speed of the left side of the robot in percent output.
-     */
     @Override
-    public double getLeftPercent() {
+    public double getLeftCurrent() {
+        return driveSim.getLeftCurrentDrawAmps();
+    }
+
+    @Override
+    public double getLeftDistance() {
+        return driveSim.getLeftPositionMeters();
+    }
+
+    @Override
+    public double getLeftPosition() {
+        return driveSim.getLeftPositionMeters() * 2 * Math.PI / DriveConstants.rotToMeters;
+    }
+
+    @Override
+    public double getLeftTemperature() {
         return 0;
     }
 
-    /**
-     * Sets the speed of the left side of the robot.
-     * 
-     * @param percent The speed of the left side of the robot in percent output.
-     */
-    @Override
-    public void setLeftPercent(double percent) {
-        // The left motors aren't already reversed, so they're being reversed again.
-        percent = -MathUtil.clamp(percent, -1, 1);
-
-        flMotor.set(percent);
-    }
-
-    /**
-     * Gets the speed of the right side of the robot.
-     * 
-     * @return The speed of the right side of the robot in percent output.
-     */
-    @Override
-    public double getRightPercent() {
-        return 0;
-    }
-
-    /**
-     * Sets the speed of the right side of the robot.
-     * 
-     * @param percent The speed of the right side of the robot in percent output.
-     */
-    @Override
-    public void setRightPercent(double percent) {
-        percent = MathUtil.clamp(percent, -1, 1);
-        
-        frMotor.set(percent);
-    }
-
-    /**
-     * Gets the speed of the right side of the robot.
-     * 
-     * @return The speed of the right side of the robot in volts.
-     */
     @Override
     public double getLeftVoltage() {
-        return flMotor.getMotorVoltage().getValue();
+        return leftVolts;
     }
 
-    /**
-     * Sets the speed of the right side of the robot.
-     * 
-     * @param volts The speed of the right side of the robot in volts.
-     */
     @Override
     public void setLeftVoltage(double volts) {
-        volts = MathUtil.clamp(volts, -1, 1);
-        frMotor.setControl(new VoltageOut(volts));
+        leftVolts = volts;
     }
 
-    /**
-     * Gets the speed of the right side of the robot.
-     * 
-     * @return The speed of the right side of the robot in volts.
-     */
+    @Override
+    public double getLeftVelocity() {
+        return driveSim.getLeftVelocityMetersPerSecond();
+    }
+
+    @Override
+    public double getRightCurrent() {
+        return driveSim.getRightCurrentDrawAmps();
+    }
+
+    @Override
+    public double getRightDistance() {
+        return driveSim.getRightPositionMeters();
+    }
+
+    @Override
+    public double getRightPosition() {
+        return driveSim.getRightPositionMeters() * 2 * Math.PI / DriveConstants.rotToMeters;
+    }
+
+    @Override
+    public double getRightTemperature() {
+        return 0;
+    }
+
     @Override
     public double getRightVoltage() {
-        return frMotor.getMotorVoltage().getValue();
+        return rightVolts;
     }
 
-    /**
-     * Sets the speed of the right side of the robot.
-     * 
-     * @param volts The speed of the right side of the robot in volts.
-     */
     @Override
     public void setRightVoltage(double volts) {
-        volts = MathUtil.clamp(volts, -1, 1);
-        frMotor.setControl(new VoltageOut(volts));
-    }    
+        rightVolts = volts;
+    }
+
+    @Override
+    public double getRightVelocity() {
+        return driveSim.getRightVelocityMetersPerSecond();
+    }
 }

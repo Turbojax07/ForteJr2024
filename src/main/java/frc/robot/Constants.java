@@ -32,7 +32,7 @@ public final class Constants {
         public static final double batteryToCenter = Units.inchesToMeters(10);
         public static final double gearboxWeight = Units.lbsToKilograms(2.8 * 2.0) + 2.0;
         public static final double gearboxToCenter = Units.inchesToMeters(13);
-        public static final double inertia = (batteryWeight * Math.pow(batteryToCenter, 2)) + (gearboxWeight * Math.pow(gearboxToCenter, 2));
+        public static final double momentOfInertia = (batteryWeight * Math.pow(batteryToCenter, 2)) + (gearboxWeight * Math.pow(gearboxToCenter, 2));
 
         // Motor IDs
         public static final int frontLeftID = 1;
@@ -42,9 +42,10 @@ public final class Constants {
 
         // Robot specs
         public static final double robotWidth = Units.inchesToMeters(13); // Meters
-        public static final double wheelDiameter = Units.inchesToMeters(4); // Meters
-        public static final double wheelCircumference = wheelDiameter * Math.PI; // Meters
+        public static final double wheelRadius = Units.inchesToMeters(4); // Meters
+        public static final double wheelCircumference = wheelRadius * 2.0 * Math.PI; // Meters
         public static final double gearRatio = 8.46;
+        public static final double mass = Units.lbsToKilograms(60);
 
         // Max speeds
         public static final double maxClosedDriveSpeed = 3.5; // Meters / Second
@@ -56,14 +57,10 @@ public final class Constants {
         public static final double rotToMeters = wheelCircumference / gearRatio;
 
         // PIDFF values
-        public static final double leftP   = 0.0;
-        public static final double leftI   = 0.0;
-        public static final double leftD   = 0.0;
-        public static final double leftFF  = 0.0;
-        public static final double rightP  = 0.0;
-        public static final double rightI  = 0.0;
-        public static final double rightD  = 0.0;
-        public static final double rightFF = 0.0;
+        public static final double kP   = 0.0;
+        public static final double kI   = 0.0;
+        public static final double kD   = 0.0;
+        public static final double kFF  = 0.0;
     }
 
     public static class ShooterConstants {
